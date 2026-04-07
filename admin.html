@@ -184,17 +184,17 @@ header img{height:36px;}
       <div class="stat-card"><div class="stat-num" id="statWeek">-</div><div class="stat-label">今週の予約数</div></div>
       <div class="stat-card"><div class="stat-num" id="statToday">-</div><div class="stat-label">本日の予約数</div></div>
     </div>
-    <div class="card"><div class="sec-title">メニュー別集計（今月）</div><div id="menuStats"></div></div>
+    <div class="card"><div class="sec-title">メニュー別集計(今月)</div><div id="menuStats"></div></div>
   </div>
 
   <!-- TAB3 休業日 -->
   <div class="tab-content" id="tabContent3">
     <div class="card">
-      <div class="sec-title">定休日（曜日）</div>
+      <div class="sec-title">定休日(曜日)</div>
       <div class="week-btns" id="weekBtns"></div>
     </div>
     <div class="card">
-      <div class="sec-title">特定休業日（カレンダーで選択）</div>
+      <div class="sec-title">特定休業日(カレンダーで選択)</div>
       <div class="cal-nav">
         <button onclick="prevMonth()">‹</button>
         <span class="cal-title" id="calTitle"></span>
@@ -427,8 +427,8 @@ function renderReservations(){
     var isToday=r.date===todayStr;
     var memo=r.memo||'';
     return '<div class="res-item'+(isToday?' today-hl':'')+'" id="res-'+r.id+'">'+
-      '<div class="res-date">'+(isToday?'🟢 ':'')+（d.getMonth()+1)+'/'+d.getDate()+'（'+dow[d.getDay()]+'） '+r.time+'〜</div>'+
-      '<div class="res-detail">'+r.name+' 様　／　'+r.menuName+'　／　'+r.tel+(r.email?'<br>'+r.email:'')+'</div>'+
+      '<div class="res-date">'+(isToday?'🟢 ':'')+(d.getMonth()+1)+'/'+d.getDate()+'('+dow[d.getDay()]+') '+r.time+'〜</div>'+
+      '<div class="res-detail">'+r.name+' 様 ／ '+r.menuName+' ／ '+r.tel+(r.email?'<br>'+r.email:'')+'</div>'+
       '<textarea class="res-memo" id="memo-'+r.id+'" rows="1" placeholder="メモを追加...">'+memo+'</textarea>'+
       '<div class="res-actions">'+
         '<button class="btn-memo" onclick="saveMemo(\''+r.id+'\')">メモ保存</button>'+
@@ -445,7 +445,7 @@ function renderTodayBanner(){
   banner.style.display='block';
   var dow=['日','月','火','水','木','金','土'];
   list.innerHTML=items.map(function(r){
-    return '<div class="today-item"><span class="today-time">'+r.time+'</span><span>'+r.name+' 様　'+r.menuName+'</span></div>';
+    return '<div class="today-item"><span class="today-time">'+r.time+'</span><span>'+r.name+' 様 '+r.menuName+'</span></div>';
   }).join('');
 }
 
@@ -484,7 +484,7 @@ function saveMemo(id){
 }
 function openDeleteModal(id,name,dt){
   deleteTargetId=id;
-  document.getElementById('deleteModalInfo').textContent=dt+'　'+name+' 様の予約を削除します。この操作は元に戻せません。';
+  document.getElementById('deleteModalInfo').textContent=dt+' '+name+' 様の予約を削除します。この操作は元に戻せません。';
   document.getElementById('deleteModal').classList.add('open');
 }
 function closeDeleteModal(){document.getElementById('deleteModal').classList.remove('open');deleteTargetId=null;}
@@ -541,7 +541,7 @@ function renderHolidayList(){
   var dow=['日','月','火','水','木','金','土'];
   list.innerHTML=sorted.map(function(ds){
     var dt=new Date(ds);
-    return '<div class="holiday-item"><span>'+(dt.getMonth()+1)+'/'+(dt.getDate())+'（'+dow[dt.getDay()]+'）</span><button class="holiday-del" onclick="removeSpecificOff(\''+ds+'\')">×</button></div>';
+    return '<div class="holiday-item"><span>'+(dt.getMonth()+1)+'/'+(dt.getDate())+'('+dow[dt.getDay()]+')</span><button class="holiday-del" onclick="removeSpecificOff(\''+ds+'\')">×</button></div>';
   }).join('');
 }
 function removeSpecificOff(ds){specificOff=specificOff.filter(function(x){return x!==ds;});renderCalendar();renderHolidayList();}
@@ -586,13 +586,13 @@ function selectBlockDate(ds,dow){
   renderBlockCalendar();
   var dowN=['日','月','火','水','木','金','土'];
   var d=new Date(ds);
-  document.getElementById('blockDateLabel').textContent=(d.getMonth()+1)+'/'+(d.getDate())+'（'+dowN[dow]+'）の時間ブロック';
+  document.getElementById('blockDateLabel').textContent=(d.getMonth()+1)+'/'+(d.getDate())+'('+dowN[dow]+')の時間ブロック';
   var cfg=hoursConfig[dow]||hoursConfig[String(dow)]||{};
   var times=genSlots(cfg.open||( dow===0||dow===6?'10:00':'18:30'),cfg.close||(dow===0||dow===6?'18:00':'21:30'));
   document.getElementById('blockSlots').innerHTML=times.map(function(t){
     var key=ds+'_'+t.replace(':','');
     var isB=blockedSlots.indexOf(key)>=0;
-    return '<button class="block-slot-btn'+(isB?' blocked':'')+'" data-key="'+key+'" onclick="toggleBlockSlot(this)">'+t+'　'+(isB?'🔒 ブロック中':'○ 空き')+'</button>';
+    return '<button class="block-slot-btn'+(isB?' blocked':'')+'" data-key="'+key+'" onclick="toggleBlockSlot(this)">'+t+' '+(isB?'🔒 ブロック中':'○ 空き')+'</button>';
   }).join('');
   document.getElementById('blockTimeSection').style.display='block';
 }
@@ -608,8 +608,8 @@ function toggleBlockSlot(el){
   var t=key.split('_')[1];
   var ts=t.slice(0,2)+':'+t.slice(2);
   var idx=blockedSlots.indexOf(key);
-  if(idx>=0){blockedSlots.splice(idx,1);el.classList.remove('blocked');el.textContent=ts+'　○ 空き';}
-  else{blockedSlots.push(key);el.classList.add('blocked');el.textContent=ts+'　🔒 ブロック中';}
+  if(idx>=0){blockedSlots.splice(idx,1);el.classList.remove('blocked');el.textContent=ts+' ○ 空き';}
+  else{blockedSlots.push(key);el.classList.add('blocked');el.textContent=ts+' 🔒 ブロック中';}
   renderBlockedList();
 }
 function renderBlockedList(){
@@ -621,7 +621,7 @@ function renderBlockedList(){
     var p=key.split('_');var ds=p[0];var t=p[1];
     var ts=t.slice(0,2)+':'+t.slice(2);
     var d=new Date(ds);
-    return '<span class="blocked-tag">'+(d.getMonth()+1)+'/'+(d.getDate())+'（'+dow[d.getDay()]+'） '+ts+'<button onclick="removeBlock(\''+key+'\')">×</button></span>';
+    return '<span class="blocked-tag">'+(d.getMonth()+1)+'/'+(d.getDate())+'('+dow[d.getDay()]+') '+ts+'<button onclick="removeBlock(\''+key+'\')">×</button></span>';
   }).join('');
 }
 function removeBlock(key){
@@ -643,7 +643,7 @@ function renderReminderList(){
   var dow=['日','月','火','水','木','金','土'];
   el.innerHTML=items.map(function(r){
     return '<div class="reminder-item">'+
-      '<div><div class="reminder-name">'+r.name+' 様</div><div class="reminder-time">'+(tom.getMonth()+1)+'/'+(tom.getDate())+'（'+dow[tom.getDay()]+'） '+r.time+'〜　'+r.menuName+'</div></div>'+
+      '<div><div class="reminder-name">'+r.name+' 様</div><div class="reminder-time">'+(tom.getMonth()+1)+'/'+(tom.getDate())+'('+dow[tom.getDay()]+') '+r.time+'〜 '+r.menuName+'</div></div>'+
       '<button class="btn-send" onclick="sendReminder(\''+r.name+'\',\''+(r.email||'')+'\',\''+r.date+'\',\''+r.time+'\',\''+r.menuName+'\')">送信</button>'+
     '</div>';
   }).join('');
@@ -655,7 +655,7 @@ function sendReminder(name,email,date,time,menu){
     var dow=['日','月','火','水','木','金','土'];
     emailjs.send(EMAILJS_SERVICE,EMAILJS_TPL,{
       to_name:name,to_email:email,
-      date:(d.getMonth()+1)+'/'+(d.getDate())+'（'+dow[d.getDay()]+'）',
+      date:(d.getMonth()+1)+'/'+(d.getDate())+'('+dow[d.getDay()]+')',
       time:time,menu_name:menu,reminder:'true'
     }).then(function(){showToast(name+' 様にリマインダーを送信しました');})
       .catch(function(){showToast('送信に失敗しました');});
