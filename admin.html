@@ -407,37 +407,6 @@
     text-align: center;
   }
 
-  /* ===== リマインダー ===== */
-  .reminder-section { }
-  .reminder-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f4ef;
-    font-size: 13px;
-  }
-
-  .reminder-item:last-child { border-bottom: none; }
-  .reminder-info { flex: 1; }
-  .reminder-name { font-weight: 400; color: var(--text); }
-  .reminder-time { color: var(--muted); font-size: 12px; margin-top: 2px; }
-
-  .btn-send {
-    padding: 7px 14px;
-    background: var(--green);
-    color: var(--white);
-    border: none;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-send:hover { background: #3d6b4a; }
-  .btn-send:disabled { background: #aaa; cursor: default; }
 
   /* ===== 保存ボタン ===== */
   .save-btn {
@@ -476,6 +445,78 @@
   }
 
   #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== リマインダー ===== */
+  .reminder-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f4ef;
+    font-size: 13px;
+  }
+  .reminder-item:last-child { border-bottom: none; }
+  .reminder-info { flex: 1; }
+  .reminder-name { font-weight: 400; color: var(--text); }
+  .reminder-time { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .btn-send {
+    padding: 7px 14px;
+    background: var(--green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn-send:hover { background: #3d6b4a; }
+  .btn-send:disabled { background: #aaa; cursor: default; }
+
+  /* ===== 時間ブロック ===== */
+  .block-slot-btn {
+    padding: 8px 14px;
+    border: 1px solid var(--green-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .block-slot-btn.blocked {
+    background: var(--red-light);
+    border-color: var(--red-border);
+    color: var(--red);
+  }
+
+  .blocked-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--red-light);
+    border: 1px solid var(--red-border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--red);
+    margin: 4px;
+  }
+
+  .blocked-tag button {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+    line-height: 1;
+  }
+
+  .no-block { font-size: 13px; color: var(--muted); padding: 8px 0; }
 
   /* ===== モーダル（削除確認）===== */
   #deleteModal {
@@ -558,7 +599,8 @@
     <div class="tab" id="tab2" onclick="showTab(2)">統計</div>
     <div class="tab" id="tab3" onclick="showTab(3)">休業日</div>
     <div class="tab" id="tab4" onclick="showTab(4)">営業時間</div>
-    <div class="tab" id="tab5" onclick="showTab(5)">リマインダー</div>
+    <div class="tab" id="tab5" onclick="showTab(5)">時間ブロック</div>
+    <div class="tab" id="tab6" onclick="showTab(6)">リマインダー</div>
   </div>
 
   <!-- TAB1: 予約一覧 -->
@@ -630,16 +672,47 @@
     </div>
     <button class="save-btn" onclick="saveSettings()">設定を保存する</button>
   </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8;">明日の予約者に手動でリマインダーメールを送信します。</p>
+      <div id="reminderList"><div class="no-res">読み込み中...</div></div>
+    </div>
+  </div>
+</div>
 
-  <!-- TAB5: リマインダー -->
+  <!-- TAB5: 時間ブロック -->
   <div class="tab-content" id="tabContent5">
+    <div class="card">
+      <div class="section-title">日付を選択</div>
+      <div class="cal-nav">
+        <button onclick="prevBlockMonth()">‹</button>
+        <span class="cal-title" id="blockCalTitle"></span>
+        <button onclick="nextBlockMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="blockCalGrid"></div>
+    </div>
+
+    <div id="blockTimeSection" style="display:none;">
+      <div class="card">
+        <div class="section-title" id="blockDateLabel">時間帯を選択</div>
+        <div id="blockSlots" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">ブロック中の時間帯一覧</div>
+      <div id="blockedList"></div>
+    </div>
+
+    <button class="save-btn" onclick="saveSettings()">設定を保存する</button>
+  </div>
+
+  <!-- TAB6: リマインダー -->
+  <div class="tab-content" id="tabContent6">
     <div class="card">
       <div class="section-title">前日リマインダー送信</div>
       <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8;">明日の予約者に手動でリマインダーメールを送信します。</p>
       <div id="reminderList"><div class="no-res">読み込み中...</div></div>
     </div>
   </div>
-</div>
 
 <!-- 削除確認モーダル -->
 <div id="deleteModal">
@@ -670,11 +743,14 @@
     6:{open:'10:00',close:'18:00'}
   };
   let allReservations = [];
+  let blockedSlots = [];
+  let selectedBlockDate = null;
+  let blockCalYear, blockCalMonth;
   let currentFilter = 'all';
   let deleteTargetId = null;
   let calYear, calMonth;
   const today = new Date();
-  const todayStr = fmtDate(today);
+  let todayStr;
 
   // ===== LOGIN =====
   function doLogin() {
@@ -695,21 +771,41 @@
   }
 
   // ===== FIREBASE =====
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
   async function initFirebase() {
     if (window._db) return window._db;
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const app = initializeApp({
-      apiKey:"AIzaSyDwOnp5ZsFAPtiaVgipEXQwUO3HlCZuRLU",
-      authDomain:"wakaba-m.firebaseapp.com",
-      projectId:"wakaba-m",
-      storageBucket:"wakaba-m.firebasestorage.app",
-      messagingSenderId:"904844527203",
-      appId:"1:904844527203:web:a027a87a449f5b436bda56"
-    });
-    window._db = fb.getFirestore(app);
-    window._fb = fb;
-    return window._db;
+    await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
+    await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js");
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey:"AIzaSyDwOnp5ZsFAPtiaVgipEXQwUO3HlCZuRLU",
+        authDomain:"wakaba-m.firebaseapp.com",
+        projectId:"wakaba-m",
+        storageBucket:"wakaba-m.firebasestorage.app",
+        messagingSenderId:"904844527203",
+        appId:"1:904844527203:web:a027a87a449f5b436bda56"
+      });
+    }
+    const db = firebase.firestore();
+    window._db = db;
+    window._fb = {
+      doc: (db, col, id) => db.collection(col).doc(id),
+      getDoc: async (ref) => { const s = await ref.get(); return { exists: () => s.exists, data: () => s.data() }; },
+      setDoc: (ref, data) => ref.set(data),
+      updateDoc: (ref, data) => ref.update(data),
+      deleteDoc: (ref) => ref.delete(),
+      collection: (db, name) => db.collection(name),
+      getDocs: async (ref) => { const s = await ref.get(); return { forEach: (fn) => s.docs.forEach(d => fn({ id: d.id, data: () => d.data() })) }; },
+    };
+    return db;
   }
 
   async function initMain() {
@@ -720,19 +816,24 @@
     renderHoursTable();
     renderCalendar();
     renderHolidayList();
+    blockCalYear = today.getFullYear();
+    blockCalMonth = today.getMonth();
+    renderBlockCalendar();
+    renderBlockedList();
     await loadReservations();
   }
 
   async function loadSettings() {
     try {
       const db = await initFirebase();
-      const { doc, getDoc } = window._fb;
-      const snap = await getDoc(doc(db, 'settings','business'));
-      if (snap.exists()) {
-        const d = snap.data();
+      const snap = await db.collection('settings').doc('business').get();
+      const snapWrap = { exists: () => snap.exists, data: () => snap.data() };
+      if (snapWrap.exists()) {
+        const d = snapWrap.data();
         weeklyOff = d.weeklyOff || [];
         specificOff = d.specificOff || [];
         if (d.hoursConfig) hoursConfig = d.hoursConfig;
+        if (d.blockedSlots) blockedSlots = d.blockedSlots;
       }
     } catch(e) { console.warn(e); }
   }
@@ -742,8 +843,7 @@
     if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
     try {
       const db = await initFirebase();
-      const { doc, setDoc } = window._fb;
-      await setDoc(doc(db,'settings','business'), { weeklyOff, specificOff, hoursConfig, updatedAt: new Date().toISOString() });
+      await db.collection('settings').doc('business').set({ weeklyOff, specificOff, hoursConfig, blockedSlots, updatedAt: new Date().toISOString() });
       showToast('設定を保存しました');
     } catch(e) {
       showToast('保存に失敗しました');
@@ -756,8 +856,7 @@
   async function loadReservations() {
     try {
       const db = await initFirebase();
-      const { collection, getDocs } = window._fb;
-      const snap = await getDocs(collection(db,'reservations'));
+      const snap = await db.collection('reservations').get();
       allReservations = [];
       snap.forEach(d => allReservations.push({ id: d.id, ...d.data() }));
       allReservations.sort((a,b) => {
@@ -767,8 +866,7 @@
       renderReservations();
       renderTodayBanner();
       renderStats();
-      renderReminderList();
-    } catch(e) {
+      } catch(e) {
       document.getElementById('reservationList').innerHTML = '<div class="no-res">読み込みに失敗しました</div>';
     }
   }
@@ -776,6 +874,7 @@
   function fmtDate(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
+  todayStr = fmtDate(today);
 
   function getWeekRange() {
     const d = new Date(today);
@@ -883,8 +982,7 @@
     const memo = document.getElementById(`memo-${id}`).value;
     try {
       const db = await initFirebase();
-      const { doc, updateDoc } = window._fb;
-      await updateDoc(doc(db,'reservations',id), { memo });
+      await db.collection('reservations').doc(id).update({ memo });
       const target = allReservations.find(r => r.id === id);
       if (target) target.memo = memo;
       showToast('メモを保存しました');
@@ -907,44 +1005,16 @@
     if (!deleteTargetId) return;
     try {
       const db = await initFirebase();
-      const { doc, deleteDoc } = window._fb;
-      await deleteDoc(doc(db,'reservations',deleteTargetId));
+      await db.collection('reservations').doc(deleteTargetId).delete();
       allReservations = allReservations.filter(r => r.id !== deleteTargetId);
       closeDeleteModal();
       renderReservations();
       renderTodayBanner();
       renderStats();
-      renderReminderList();
-      showToast('予約を削除しました');
+        showToast('予約を削除しました');
     } catch(e) { showToast('削除に失敗しました'); closeDeleteModal(); }
   }
 
-  // ===== リマインダー =====
-  function renderReminderList() {
-    const el = document.getElementById('reminderList');
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate()+1);
-    const tomorrowStr = fmtDate(tomorrow);
-    const items = allReservations.filter(r => r.date === tomorrowStr);
-    if (items.length === 0) {
-      el.innerHTML = '<div class="no-res">明日の予約はありません</div>';
-      return;
-    }
-    const d = tomorrow;
-    const dow = ['日','月','火','水','木','金','土'][d.getDay()];
-    el.innerHTML = items.map(r =>
-      `<div class="reminder-item">
-        <div class="reminder-info">
-          <div class="reminder-name">${r.name} 様</div>
-          <div class="reminder-time">${d.getMonth()+1}/${d.getDate()}（${dow}） ${r.time}〜　${r.menuName}</div>
-        </div>
-        <button class="btn-send" onclick="sendReminder('${r.id}','${r.name}','${r.email||''}','${r.date}','${r.time}','${r.menuName}')">送信</button>
-      </div>`
-    ).join('');
-  }
-
-  async function sendReminder(id, name, email, date, time, menu) {
-    if (!email) { showToast('メールアドレスがありません'); return; }
     // EmailJS送信
     if (!window.emailjs) {
       const s = document.createElement('script');
@@ -1063,11 +1133,152 @@
 
   // ===== TABS =====
   function showTab(n) {
-    for(let i=1;i<=5;i++){
+    if(n===5){renderBlockCalendar();renderBlockedList();}
+    for(let i=1;i<=6;i++){
       document.getElementById(`tab${i}`).classList.toggle('active', i===n);
       document.getElementById(`tabContent${i}`).classList.toggle('active', i===n);
     }
   }
+
+  // ===== リマインダー =====
+  function renderReminderList() {
+    const el = document.getElementById('reminderList');
+    if (!el) return;
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate()+1);
+    const tomorrowStr = fmtDate(tomorrow);
+    const items = allReservations.filter(r => r.date === tomorrowStr);
+    if (items.length === 0) {
+      el.innerHTML = '<div class="no-res">明日の予約はありません</div>';
+      return;
+    }
+    const dow = ['日','月','火','水','木','金','土'][tomorrow.getDay()];
+    el.innerHTML = items.map(r =>
+      `<div class="reminder-item">
+        <div class="reminder-info">
+          <div class="reminder-name">${r.name} 様</div>
+          <div class="reminder-time">${tomorrow.getMonth()+1}/${tomorrow.getDate()}（${dow}） ${r.time}〜　${r.menuName}</div>
+        </div>
+        <button class="btn-send" onclick="sendReminder('${r.id}','${r.name}','${r.email||''}','${r.date}','${r.time}','${r.menuName}')">送信</button>
+      </div>`
+    ).join('');
+  }
+
+  async function sendReminder(id, name, email, date, time, menu) {
+    if (!email) { showToast('メールアドレスがありません'); return; }
+    if (!window.emailjs) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+      document.head.appendChild(s);
+      await new Promise(r => s.onload = r);
+      emailjs.init(EMAILJS_PUBLIC);
+    }
+    const d = new Date(date);
+    const dow = ['日','月','火','水','木','金','土'][d.getDay()];
+    try {
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TPL_CUSTOMER, {
+        to_name: name,
+        to_email: email,
+        date: `${d.getMonth()+1}/${d.getDate()}（${dow}）`,
+        time,
+        menu_name: menu,
+        reminder: 'true'
+      });
+      showToast(`${name} 様にリマインダーを送信しました`);
+    } catch(e) { showToast('送信に失敗しました'); }
+  }
+
+  // ===== 時間ブロック =====
+  function renderBlockCalendar() {
+    if (!blockCalYear) { blockCalYear = today.getFullYear(); blockCalMonth = today.getMonth(); }
+    document.getElementById('blockCalTitle').textContent = `${blockCalYear}年 ${blockCalMonth+1}月`;
+    const grid = document.getElementById('blockCalGrid');
+    const days = ['日','月','火','水','木','金','土'];
+    let html = days.map(d=>`<div class="cal-header">${d}</div>`).join('');
+    const first = new Date(blockCalYear, blockCalMonth, 1).getDay();
+    for(let i=0;i<first;i++) html += '<div></div>';
+    const last = new Date(blockCalYear, blockCalMonth+1, 0).getDate();
+    for(let d=1;d<=last;d++){
+      const dateStr = `${blockCalYear}-${String(blockCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dow = new Date(blockCalYear, blockCalMonth, d).getDay();
+      const isToday = dateStr === todayStr;
+      const isSel = selectedBlockDate === dateStr;
+      const isOff = weeklyOff.includes(dow) || specificOff.includes(dateStr);
+      html += `<div class="cal-day${isToday?' today':''}${isSel?' selected':''}${isOff&&!isToday?' off':''}" onclick="selectBlockDate('${dateStr}',${dow})">${d}</div>`;
+    }
+    grid.innerHTML = html;
+  }
+
+  function selectBlockDate(dateStr, dow) {
+    selectedBlockDate = dateStr;
+    renderBlockCalendar();
+    const d = new Date(dateStr);
+    const dowNames = ['日','月','火','水','木','金','土'];
+    document.getElementById('blockDateLabel').textContent = `${d.getMonth()+1}/${d.getDate()}（${dowNames[dow]}）の時間ブロック`;
+    const cfg = hoursConfig[dow] || hoursConfig[String(dow)];
+    let times = dow === 0 || dow === 6
+      ? ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00']
+      : ['18:30','19:30','20:30','21:30'];
+    if (cfg && cfg.slots) times = cfg.slots;
+    else if (cfg && cfg.open && cfg.close) times = generateTimeSlots(cfg.open, cfg.close);
+    document.getElementById('blockSlots').innerHTML = times.map(t => {
+      const key = `${dateStr}_${t.replace(':','')}`;
+      const isBlocked = blockedSlots.includes(key);
+      return `<button class="block-slot-btn${isBlocked?' blocked':''}" data-key="${key}" onclick="toggleBlockSlot(this)">${t}　${isBlocked?'🔒 ブロック中':'○ 空き'}</button>`;
+    }).join('');
+    document.getElementById('blockTimeSection').style.display = 'block';
+  }
+
+  function generateTimeSlots(open, close) {
+    const slots = [];
+    let [h,m] = open.split(':').map(Number);
+    const [eh,em] = close.split(':').map(Number);
+    while(h < eh || (h===eh && m<=em)) {
+      slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+      m += 60; if(m>=60){h++;m-=60;}
+    }
+    return slots;
+  }
+
+  function toggleBlockSlot(el) {
+    const key = el.dataset.key;
+    const t = key.split('_')[1];
+    const timeStr = t.slice(0,2)+':'+t.slice(2);
+    if(blockedSlots.includes(key)){
+      blockedSlots = blockedSlots.filter(k=>k!==key);
+      el.classList.remove('blocked');
+      el.textContent = `${timeStr}　○ 空き`;
+    } else {
+      blockedSlots.push(key);
+      el.classList.add('blocked');
+      el.textContent = `${timeStr}　🔒 ブロック中`;
+    }
+    renderBlockedList();
+  }
+
+  function renderBlockedList() {
+    const list = document.getElementById('blockedList');
+    if (!list) return;
+    if(!blockedSlots.length){ list.innerHTML='<div class="no-block">ブロック中の時間帯はありません</div>'; return; }
+    list.innerHTML = [...blockedSlots].sort().map(key => {
+      const [dateStr,timeRaw] = key.split('_');
+      const timeStr = timeRaw.slice(0,2)+':'+timeRaw.slice(2);
+      const d = new Date(dateStr);
+      const dow = ['日','月','火','水','木','金','土'][d.getDay()];
+      return `<span class="blocked-tag">${d.getMonth()+1}/${d.getDate()}（${dow}） ${timeStr}<button onclick="removeBlock('${key}')">×</button></span>`;
+    }).join('');
+  }
+
+  function removeBlock(key) {
+    blockedSlots = blockedSlots.filter(k=>k!==key);
+    renderBlockedList();
+    if(selectedBlockDate && key.startsWith(selectedBlockDate)) {
+      selectBlockDate(selectedBlockDate, new Date(selectedBlockDate).getDay());
+    }
+  }
+
+  function prevBlockMonth() { blockCalMonth--; if(blockCalMonth<0){blockCalMonth=11;blockCalYear--;} renderBlockCalendar(); }
+  function nextBlockMonth() { blockCalMonth++; if(blockCalMonth>11){blockCalMonth=0;blockCalYear++;} renderBlockCalendar(); }
 
   // ===== TOAST =====
   function showToast(msg) {
