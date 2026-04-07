@@ -866,7 +866,8 @@
       renderReservations();
       renderTodayBanner();
       renderStats();
-      } catch(e) {
+      renderReminderList();
+    } catch(e) {
       document.getElementById('reservationList').innerHTML = '<div class="no-res">読み込みに失敗しました</div>';
     }
   }
