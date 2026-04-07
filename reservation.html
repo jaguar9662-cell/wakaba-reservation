@@ -693,6 +693,7 @@
         reservation_id: data.date + "_" + data.time.replace(":",""),
         cancel_url: "https://jaguar9662-cell.github.io/wakaba-reservation/cancel.html?id=" + data.date + "_" + data.time.replace(":",""),
         subject: "【wakaba】ご予約を承りました",
+        greeting: "ご予約を承りました。",
       };
       // EmailJS 送信関数
       const sendEmail = async (templateId, toEmail, params) => {
